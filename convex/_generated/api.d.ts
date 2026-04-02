@@ -8,8 +8,38 @@
  * @module
  */
 
+import type * as _lib_encryption from "../_lib/encryption.js";
+import type * as _lib_gemini from "../_lib/gemini.js";
+import type * as _lib_linkedin from "../_lib/linkedin.js";
+import type * as _lib_newsdata from "../_lib/newsdata.js";
+import type * as actions_discovery from "../actions/discovery.js";
+import type * as actions_generate from "../actions/generate.js";
+import type * as actions_healthCheck from "../actions/healthCheck.js";
+import type * as actions_publish from "../actions/publish.js";
 import type * as auth from "../auth.js";
+import type * as crons_index from "../crons/index.js";
 import type * as http from "../http.js";
+import type * as mutations_discoveredContent from "../mutations/discoveredContent.js";
+import type * as mutations_drafts from "../mutations/drafts.js";
+import type * as mutations_generatedDrafts from "../mutations/generatedDrafts.js";
+import type * as mutations_linkedinTokens from "../mutations/linkedinTokens.js";
+import type * as mutations_postSchedule from "../mutations/postSchedule.js";
+import type * as mutations_topics from "../mutations/topics.js";
+import type * as mutations_userProfiles from "../mutations/userProfiles.js";
+import type * as mutations_voice from "../mutations/voice.js";
+import type * as queries_dashboard from "../queries/dashboard.js";
+import type * as queries_discover from "../queries/discover.js";
+import type * as queries_discoveredContent from "../queries/discoveredContent.js";
+import type * as queries_drafts from "../queries/drafts.js";
+import type * as queries_generatedDrafts from "../queries/generatedDrafts.js";
+import type * as queries_history from "../queries/history.js";
+import type * as queries_linkedinTokens from "../queries/linkedinTokens.js";
+import type * as queries_postSchedule from "../queries/postSchedule.js";
+import type * as queries_schedule from "../queries/schedule.js";
+import type * as queries_settings from "../queries/settings.js";
+import type * as queries_topics from "../queries/topics.js";
+import type * as queries_userProfiles from "../queries/userProfiles.js";
+import type * as queries_voiceProfiles from "../queries/voiceProfiles.js";
 
 import type {
   ApiFromModules,
@@ -18,8 +48,38 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  "_lib/encryption": typeof _lib_encryption;
+  "_lib/gemini": typeof _lib_gemini;
+  "_lib/linkedin": typeof _lib_linkedin;
+  "_lib/newsdata": typeof _lib_newsdata;
+  "actions/discovery": typeof actions_discovery;
+  "actions/generate": typeof actions_generate;
+  "actions/healthCheck": typeof actions_healthCheck;
+  "actions/publish": typeof actions_publish;
   auth: typeof auth;
+  "crons/index": typeof crons_index;
   http: typeof http;
+  "mutations/discoveredContent": typeof mutations_discoveredContent;
+  "mutations/drafts": typeof mutations_drafts;
+  "mutations/generatedDrafts": typeof mutations_generatedDrafts;
+  "mutations/linkedinTokens": typeof mutations_linkedinTokens;
+  "mutations/postSchedule": typeof mutations_postSchedule;
+  "mutations/topics": typeof mutations_topics;
+  "mutations/userProfiles": typeof mutations_userProfiles;
+  "mutations/voice": typeof mutations_voice;
+  "queries/dashboard": typeof queries_dashboard;
+  "queries/discover": typeof queries_discover;
+  "queries/discoveredContent": typeof queries_discoveredContent;
+  "queries/drafts": typeof queries_drafts;
+  "queries/generatedDrafts": typeof queries_generatedDrafts;
+  "queries/history": typeof queries_history;
+  "queries/linkedinTokens": typeof queries_linkedinTokens;
+  "queries/postSchedule": typeof queries_postSchedule;
+  "queries/schedule": typeof queries_schedule;
+  "queries/settings": typeof queries_settings;
+  "queries/topics": typeof queries_topics;
+  "queries/userProfiles": typeof queries_userProfiles;
+  "queries/voiceProfiles": typeof queries_voiceProfiles;
 }>;
 
 /**

@@ -28,6 +28,11 @@ export const createAuthOptions = (ctx: GenericCtx<DataModel>) => {
         clientId: process.env.GITHUB_CLIENT_ID!,
         clientSecret: process.env.GITHUB_CLIENT_SECRET!,
       },
+      linkedin: {
+        clientId: process.env.LINKEDIN_CLIENT_ID!,
+        clientSecret: process.env.LINKEDIN_CLIENT_SECRET!,
+        scope: ["r_liteprofile", "w_member_social", "r_basicprofile"],
+      },
     },
     // Session cookie for client-side caching
     session: {
