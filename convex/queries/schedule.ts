@@ -1,3 +1,4 @@
+import { SCHEDULE_STATUS } from "@/lib/config"
 import { query } from "../_generated/server"
 
 export const list = query({
@@ -10,7 +11,7 @@ export const list = query({
 
     return await ctx.db
       .query("postSchedule")
-      .withIndex("userId_status", q => q.eq("userId", userId).eq("status", "queued"))
+      .withIndex("userId_status", q => q.eq("userId", userId).eq("status", SCHEDULE_STATUS.QUEUED))
       .order("asc")
       .collect()
   },
@@ -47,7 +48,7 @@ export const getNext = query({
       .order("asc")
       .collect()
 
-    const upcoming = all.filter(item => item.scheduledAt > now && item.status === "queued")
+    const upcoming = all.filter(item => item.scheduledAt > now && item.status === SCHEDULE_STATUS.QUEUED)
     return upcoming[0] ?? null
   },
 })

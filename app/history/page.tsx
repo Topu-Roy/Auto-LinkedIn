@@ -3,6 +3,7 @@
 import { api } from "@/convex/_generated/api"
 import { useQuery } from "convex/react"
 import { Calendar, ExternalLink } from "lucide-react"
+import { API, DATE_FORMAT } from "@/lib/config"
 import { StatusBadge } from "@/components/shared/status-badge"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -33,11 +34,7 @@ export default function HistoryPage() {
                   <div className="flex items-start justify-between gap-4">
                     <div>
                       <CardTitle className="text-base">
-                        {new Date(post.createdAt).toLocaleDateString("en-US", {
-                          year: "numeric",
-                          month: "long",
-                          day: "numeric",
-                        })}
+                        {new Date(post.createdAt).toLocaleDateString(DATE_FORMAT.LOCALE, DATE_FORMAT.LONG_DATE)}
                       </CardTitle>
                       <div className="mt-1 flex items-center gap-2">
                         <StatusBadge status={post.status} />
@@ -50,7 +47,7 @@ export default function HistoryPage() {
                     </div>
                     {post.linkedinPostId && (
                       <a
-                        href={`https://www.linkedin.com/feed/update/${post.linkedinPostId}`}
+                        href={API.LINKEDIN_POST_URL(post.linkedinPostId)}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="shrink-0"

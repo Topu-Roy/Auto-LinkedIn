@@ -2,35 +2,13 @@
 
 import { useState } from "react"
 import { Plus, X } from "lucide-react"
+import { CURATED_TOPICS, DEFAULTS, LIMITS, WEIGHT } from "@/lib/config"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-
-const CURATED_TOPICS = [
-  { name: "Artificial Intelligence & Machine Learning", category: "technology" },
-  { name: "Software Engineering & Development", category: "technology" },
-  { name: "SaaS & Cloud Computing", category: "technology" },
-  { name: "Digital Marketing & Growth", category: "business" },
-  { name: "Leadership & Management", category: "business" },
-  { name: "Productivity & Time Management", category: "business" },
-  { name: "Entrepreneurship & Startups", category: "business" },
-  { name: "Product Management", category: "technology" },
-  { name: "Data Science & Analytics", category: "technology" },
-  { name: "Cybersecurity", category: "technology" },
-  { name: "Remote Work & Future of Work", category: "business" },
-  { name: "Personal Branding", category: "business" },
-  { name: "Sales & Business Development", category: "business" },
-  { name: "UX/UI Design", category: "technology" },
-  { name: "Web3 & Blockchain", category: "technology" },
-  { name: "Fintech & Financial Technology", category: "business" },
-  { name: "E-commerce & Retail Tech", category: "business" },
-  { name: "HR & Talent Acquisition", category: "business" },
-  { name: "Customer Success & Support", category: "business" },
-  { name: "DevOps & Infrastructure", category: "technology" },
-]
 
 export function StepTopics({
   selectedTopics,
@@ -45,14 +23,14 @@ export function StepTopics({
     const exists = selectedTopics.find(t => t.name === topicName)
     if (exists) {
       onChange(selectedTopics.filter(t => t.name !== topicName))
-    } else if (selectedTopics.length < 10) {
-      onChange([...selectedTopics, { name: topicName, weight: "Medium", newsDataCategory: category }])
+    } else if (selectedTopics.length < LIMITS.MAX_TOPICS) {
+      onChange([...selectedTopics, { name: topicName, weight: DEFAULTS.TOPIC_WEIGHT, newsDataCategory: category }])
     }
   }
 
   const addCustomTopic = () => {
-    if (customTopic.trim() && selectedTopics.length < 10) {
-      onChange([...selectedTopics, { name: customTopic.trim(), weight: "Medium" }])
+    if (customTopic.trim() && selectedTopics.length < LIMITS.MAX_TOPICS) {
+      onChange([...selectedTopics, { name: customTopic.trim(), weight: DEFAULTS.TOPIC_WEIGHT }])
       setCustomTopic("")
     }
   }
@@ -68,8 +46,12 @@ export function StepTopics({
   return (
     <div className="space-y-6">
       <div>
-        <Label className="text-base">Selected Topics ({selectedTopics.length}/10)</Label>
-        <p className="mt-1 text-sm text-muted-foreground">Pick 3–10 topic areas you want to post about.</p>
+        <Label className="text-base">
+          Selected Topics ({selectedTopics.length}/{LIMITS.MAX_TOPICS})
+        </Label>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Pick {LIMITS.MIN_TOPICS}–{LIMITS.MAX_TOPICS} topic areas you want to post about.
+        </p>
         <div className="mt-3 flex flex-wrap gap-2">
           {selectedTopics.map(topic => (
             <Badge key={topic.name} variant="secondary" className="flex items-center gap-2 px-3 py-1">
@@ -82,9 +64,9 @@ export function StepTopics({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Low">Low</SelectItem>
-                  <SelectItem value="Medium">Medium</SelectItem>
-                  <SelectItem value="High">High</SelectItem>
+                  <SelectItem value={WEIGHT.LOW}>{WEIGHT.LOW}</SelectItem>
+                  <SelectItem value={WEIGHT.MEDIUM}>{WEIGHT.MEDIUM}</SelectItem>
+                  <SelectItem value={WEIGHT.HIGH}>{WEIGHT.HIGH}</SelectItem>
                 </SelectContent>
               </Select>
               <button
@@ -131,15 +113,15 @@ export function StepTopics({
           <Button
             onClick={addCustomTopic}
             size="icon"
-            disabled={!customTopic.trim() || selectedTopics.length >= 10}
+            disabled={!customTopic.trim() || selectedTopics.length >= LIMITS.MAX_TOPICS}
           >
             <Plus className="h-4 w-4" />
           </Button>
         </div>
       </div>
 
-      {selectedTopics.length < 3 && (
-        <p className="text-sm text-amber-600">Please select at least 3 topics to continue.</p>
+      {selectedTopics.length < LIMITS.MIN_TOPICS && (
+        <p className="text-sm text-amber-600">Please select at least {LIMITS.MIN_TOPICS} topics to continue.</p>
       )}
     </div>
   )

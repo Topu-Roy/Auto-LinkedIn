@@ -6,6 +6,7 @@ import { useMutation } from "convex/react"
 import { Check, ChevronLeft, ChevronRight } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
+import { CADENCE, LIMITS, ONBOARDING_STEPS } from "@/lib/config"
 import { StepCadence } from "@/components/onboarding/step-cadence"
 import { StepTopics } from "@/components/onboarding/step-topics"
 import { StepVoice } from "@/components/onboarding/step-voice"
@@ -13,11 +14,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 
-const steps = [
-  { id: 1, title: "Topics", description: "Pick your interest areas" },
-  { id: 2, title: "Voice", description: "Calibrate your tone" },
-  { id: 3, title: "Cadence", description: "Set your posting schedule" },
-]
+const steps = ONBOARDING_STEPS
 
 export default function OnboardingPage() {
   const router = useRouter()
@@ -42,7 +39,7 @@ export default function OnboardingPage() {
   }>({ cadence: "", timeWindows: [] })
 
   const handleNext = async () => {
-    if (currentStep === 1 && selectedTopics.length < 3) {
+    if (currentStep === 1 && selectedTopics.length < LIMITS.MIN_TOPICS) {
       toast.error("Please select at least 3 topics")
       return
     }
@@ -55,7 +52,7 @@ export default function OnboardingPage() {
     setIsSubmitting(true)
     try {
       const cadenceParts = cadenceData.cadence.split("|")
-      const cadence = cadenceParts[1] ?? "daily"
+      const cadence = cadenceParts[1] ?? CADENCE.DAILY
 
       await createTopics({
         topics: selectedTopics.map(t => ({

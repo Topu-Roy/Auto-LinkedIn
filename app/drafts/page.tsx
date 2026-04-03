@@ -6,6 +6,7 @@ import type { Id } from "@/convex/_generated/dataModel"
 import { useMutation, useQuery } from "convex/react"
 import { Check, Edit2, X } from "lucide-react"
 import { toast } from "sonner"
+import { ERRORS, TIME } from "@/lib/config"
 import { ConfidenceMeter } from "@/components/shared/confidence-meter"
 import { StatusBadge } from "@/components/shared/status-badge"
 import { Button } from "@/components/ui/button"
@@ -21,7 +22,7 @@ import {
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 
-const MIN_SCHEDULE_OFFSET = 15 * 60 * 1000
+const MIN_SCHEDULE_OFFSET = TIME.MIN_SCHEDULE_OFFSET_MS
 
 export default function DraftsPage() {
   const drafts = useQuery(api.queries.drafts.list)
@@ -47,7 +48,7 @@ export default function DraftsPage() {
     const minTime = Date.now() + MIN_SCHEDULE_OFFSET
 
     if (scheduledAt < minTime) {
-      toast.error("Scheduled time must be at least 15 minutes in the future")
+      toast.error(ERRORS.SCHEDULE_TOO_SOON)
       return
     }
 

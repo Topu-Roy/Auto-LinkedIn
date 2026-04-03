@@ -1,4 +1,5 @@
 import { v } from "convex/values"
+import { DRAFT_STATUS, ERRORS, SCHEDULE_STATUS, TIME } from "@/lib/config"
 import { mutation, query } from "../_generated/server"
 
 export const list = query({
@@ -11,7 +12,7 @@ export const list = query({
 
     return await ctx.db
       .query("generatedDrafts")
-      .withIndex("userId_status", q => q.eq("userId", userId).eq("status", "pending_review"))
+      .withIndex("userId_status", q => q.eq("userId", userId).eq("status", DRAFT_STATUS.PENDING_REVIEW))
       .order("desc")
       .collect()
   },
@@ -24,19 +25,19 @@ export const approve = mutation({
   },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity()
-    if (!identity) throw new Error("Unauthenticated")
+    if (!identity) throw new Error(ERRORS.UNAUTHENTICATED)
 
     const userId = identity.subject
 
     const draft = await ctx.db.get("generatedDrafts", args.id)
-    if (draft?.userId !== userId) throw new Error("Draft not found")
+    if (draft?.userId !== userId) throw new Error(ERRORS.DRAFT_NOT_FOUND)
 
-    if (args.scheduledAt <= Date.now() + 15 * 60 * 1000) {
-      throw new Error("Scheduled time must be at least 15 minutes in the future")
+    if (args.scheduledAt <= Date.now() + TIME.MIN_SCHEDULE_OFFSET_MS) {
+      throw new Error(ERRORS.SCHEDULE_TOO_SOON)
     }
 
     await ctx.db.patch("generatedDrafts", args.id, {
-      status: "scheduled",
+      status: DRAFT_STATUS.SCHEDULED,
       scheduledAt: args.scheduledAt,
     })
 
@@ -44,7 +45,7 @@ export const approve = mutation({
       userId,
       draftId: args.id,
       scheduledAt: args.scheduledAt,
-      status: "queued",
+      status: SCHEDULE_STATUS.QUEUED,
     })
   },
 })
@@ -56,15 +57,15 @@ export const reject = mutation({
   },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity()
-    if (!identity) throw new Error("Unauthenticated")
+    if (!identity) throw new Error(ERRORS.UNAUTHENTICATED)
 
     const userId = identity.subject
 
     const draft = await ctx.db.get("generatedDrafts", args.id)
-    if (draft?.userId !== userId) throw new Error("Draft not found")
+    if (draft?.userId !== userId) throw new Error(ERRORS.DRAFT_NOT_FOUND)
 
     await ctx.db.patch("generatedDrafts", args.id, {
-      status: "rejected",
+      status: DRAFT_STATUS.REJECTED,
       rejectionReason: args.reason,
     })
   },
@@ -77,12 +78,12 @@ export const edit = mutation({
   },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity()
-    if (!identity) throw new Error("Unauthenticated")
+    if (!identity) throw new Error(ERRORS.UNAUTHENTICATED)
 
     const userId = identity.subject
 
     const draft = await ctx.db.get("generatedDrafts", args.id)
-    if (draft?.userId !== userId) throw new Error("Draft not found")
+    if (draft?.userId !== userId) throw new Error(ERRORS.DRAFT_NOT_FOUND)
 
     await ctx.db.patch("generatedDrafts", args.id, {
       content: args.content,
@@ -96,15 +97,15 @@ export const approveAsIs = mutation({
   },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity()
-    if (!identity) throw new Error("Unauthenticated")
+    if (!identity) throw new Error(ERRORS.UNAUTHENTICATED)
 
     const userId = identity.subject
 
     const draft = await ctx.db.get("generatedDrafts", args.id)
-    if (draft?.userId !== userId) throw new Error("Draft not found")
+    if (draft?.userId !== userId) throw new Error(ERRORS.DRAFT_NOT_FOUND)
 
     await ctx.db.patch("generatedDrafts", args.id, {
-      status: "approved",
+      status: DRAFT_STATUS.APPROVED,
     })
   },
 })

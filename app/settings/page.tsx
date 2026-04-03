@@ -4,6 +4,7 @@ import { useState } from "react"
 import { api } from "@/convex/_generated/api"
 import { useQuery } from "convex/react"
 import { AlertTriangle, CheckCircle2, ExternalLink } from "lucide-react"
+import { DEFAULTS, TIMEZONES, TOKEN_STATUS } from "@/lib/config"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -12,34 +13,17 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 
-const TIMEZONES = [
-  "America/New_York",
-  "America/Chicago",
-  "America/Denver",
-  "America/Los_Angeles",
-  "America/Anchorage",
-  "Pacific/Honolulu",
-  "Europe/London",
-  "Europe/Paris",
-  "Europe/Berlin",
-  "Asia/Tokyo",
-  "Asia/Shanghai",
-  "Asia/Kolkata",
-  "Australia/Sydney",
-  "UTC",
-]
-
 export default function SettingsPage() {
   const profile = useQuery(api.queries.settings.getProfile)
   const voiceProfile = useQuery(api.queries.settings.getVoiceProfile)
   const tokenStatus = useQuery(api.queries.settings.getTokenStatus)
 
   const [name, setName] = useState(profile?.name ?? "")
-  const [timezone, setTimezone] = useState(profile?.timezone ?? "UTC")
-  const [language, setLanguage] = useState(profile?.language ?? "en")
+  const [timezone, setTimezone] = useState(profile?.timezone ?? DEFAULTS.TIMEZONE)
+  const [language, setLanguage] = useState(profile?.language ?? DEFAULTS.LANGUAGE)
 
-  const isTokenActive = tokenStatus === "active" || tokenStatus === "expiring_soon"
-  const isTokenExpired = tokenStatus === "hard_expired"
+  const isTokenActive = tokenStatus === TOKEN_STATUS.ACTIVE || tokenStatus === TOKEN_STATUS.EXPIRING_SOON
+  const isTokenExpired = tokenStatus === TOKEN_STATUS.HARD_EXPIRED
 
   return (
     <div className="flex flex-col gap-6">
@@ -118,9 +102,9 @@ export default function SettingsPage() {
             {tokenStatus && (
               <Badge
                 variant={
-                  tokenStatus === "active"
+                  tokenStatus === TOKEN_STATUS.ACTIVE
                     ? "default"
-                    : tokenStatus === "expiring_soon"
+                    : tokenStatus === TOKEN_STATUS.EXPIRING_SOON
                       ? "secondary"
                       : "destructive"
                 }

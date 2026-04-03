@@ -3,6 +3,7 @@
 import { api } from "@/convex/_generated/api"
 import { useQuery } from "convex/react"
 import { ExternalLink, Pin, SkipForward, Zap } from "lucide-react"
+import { DISCOVERY_STATUS, STATUS_BADGE_CONFIG } from "@/lib/config"
 import { ConfidenceMeter } from "@/components/shared/confidence-meter"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -34,9 +35,9 @@ export default function DiscoverPage() {
               <CardHeader>
                 <div className="flex items-start justify-between gap-2">
                   <CardTitle className="line-clamp-2 text-base">{item.title}</CardTitle>
-                  {item.status === "pinned" && (
+                  {item.status === DISCOVERY_STATUS.PINNED && (
                     <Badge variant="default" className="shrink-0">
-                      Pinned
+                      {STATUS_BADGE_CONFIG[DISCOVERY_STATUS.PINNED].label}
                     </Badge>
                   )}
                 </div>

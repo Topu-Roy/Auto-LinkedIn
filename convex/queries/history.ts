@@ -1,3 +1,4 @@
+import { DRAFT_STATUS } from "@/lib/config"
 import { query } from "../_generated/server"
 
 export const list = query({
@@ -10,7 +11,7 @@ export const list = query({
 
     return await ctx.db
       .query("generatedDrafts")
-      .withIndex("userId_status", q => q.eq("userId", userId).eq("status", "published"))
+      .withIndex("userId_status", q => q.eq("userId", userId).eq("status", DRAFT_STATUS.PUBLISHED))
       .order("desc")
       .collect()
   },

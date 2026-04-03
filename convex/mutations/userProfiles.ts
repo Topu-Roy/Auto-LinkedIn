@@ -1,4 +1,5 @@
 import { v } from "convex/values"
+import { DEFAULTS, ERRORS } from "@/lib/config"
 import { mutation } from "../_generated/server"
 
 export const createOrUpdate = mutation({
@@ -9,7 +10,7 @@ export const createOrUpdate = mutation({
   },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity()
-    if (!identity) throw new Error("Unauthenticated")
+    if (!identity) throw new Error(ERRORS.UNAUTHENTICATED)
 
     const userId = identity.subject
 
@@ -32,7 +33,7 @@ export const createOrUpdate = mutation({
       name: args.name,
       timezone: args.timezone,
       language: args.language,
-      onboardingComplete: false,
+      onboardingComplete: DEFAULTS.ONBOARDING_COMPLETE,
       createdAt: Date.now(),
     })
   },
@@ -42,7 +43,7 @@ export const completeOnboarding = mutation({
   args: {},
   handler: async ctx => {
     const identity = await ctx.auth.getUserIdentity()
-    if (!identity) throw new Error("Unauthenticated")
+    if (!identity) throw new Error(ERRORS.UNAUTHENTICATED)
 
     const userId = identity.subject
 
@@ -51,7 +52,7 @@ export const completeOnboarding = mutation({
       .withIndex("userId", q => q.eq("userId", userId))
       .first()
 
-    if (!profile) throw new Error("User profile not found")
+    if (!profile) throw new Error(ERRORS.USER_PROFILE_NOT_FOUND)
 
     await ctx.db.patch("userProfiles", profile._id, {
       onboardingComplete: true,
@@ -66,7 +67,7 @@ export const getCadence = mutation({
   },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity()
-    if (!identity) throw new Error("Unauthenticated")
+    if (!identity) throw new Error(ERRORS.UNAUTHENTICATED)
 
     const userId = identity.subject
 
@@ -75,7 +76,7 @@ export const getCadence = mutation({
       .withIndex("userId", q => q.eq("userId", userId))
       .first()
 
-    if (!profile) throw new Error("User profile not found")
+    if (!profile) throw new Error(ERRORS.USER_PROFILE_NOT_FOUND)
 
     await ctx.db.patch("userProfiles", profile._id, {
       cadence: args.cadence,

@@ -2,28 +2,12 @@
 
 import { useState } from "react"
 import { Plus, X } from "lucide-react"
+import { CADENCE, DEFAULTS, LIMITS, TIMEZONES } from "@/lib/config"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-
-const TIMEZONES = [
-  "America/New_York",
-  "America/Chicago",
-  "America/Denver",
-  "America/Los_Angeles",
-  "America/Anchorage",
-  "Pacific/Honolulu",
-  "Europe/London",
-  "Europe/Paris",
-  "Europe/Berlin",
-  "Asia/Tokyo",
-  "Asia/Shanghai",
-  "Asia/Kolkata",
-  "Australia/Sydney",
-  "UTC",
-]
 
 export function StepCadence({
   cadenceData,
@@ -32,15 +16,18 @@ export function StepCadence({
   cadenceData: { cadence: string; timeWindows: { start: string; end: string }[] }
   onChange: (data: { cadence: string; timeWindows: { start: string; end: string }[] }) => void
 }) {
-  const [newWindow, setNewWindow] = useState({ start: "09:00", end: "17:00" })
+  const [newWindow, setNewWindow] = useState<{ start: string; end: string }>({
+    start: DEFAULTS.TIME_WINDOW_START,
+    end: DEFAULTS.TIME_WINDOW_END,
+  })
 
   const addTimeWindow = () => {
-    if (cadenceData.timeWindows.length < 5) {
+    if (cadenceData.timeWindows.length < LIMITS.MAX_TIME_WINDOWS) {
       onChange({
         ...cadenceData,
         timeWindows: [...cadenceData.timeWindows, newWindow],
       })
-      setNewWindow({ start: "09:00", end: "17:00" })
+      setNewWindow({ start: DEFAULTS.TIME_WINDOW_START, end: DEFAULTS.TIME_WINDOW_END })
     }
   }
 
@@ -94,10 +81,10 @@ export function StepCadence({
             <SelectValue placeholder="Select cadence" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="daily">Daily</SelectItem>
-            <SelectItem value="3x_week">3 times per week</SelectItem>
-            <SelectItem value="weekly">Weekly</SelectItem>
-            <SelectItem value="custom">Custom</SelectItem>
+            <SelectItem value={CADENCE.DAILY}>Daily</SelectItem>
+            <SelectItem value={CADENCE.THREE_TIMES_WEEK}>3 times per week</SelectItem>
+            <SelectItem value={CADENCE.WEEKLY}>Weekly</SelectItem>
+            <SelectItem value={CADENCE.CUSTOM}>Custom</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -123,7 +110,7 @@ export function StepCadence({
             </div>
           ))}
         </div>
-        {cadenceData.timeWindows.length < 5 && (
+        {cadenceData.timeWindows.length < LIMITS.MAX_TIME_WINDOWS && (
           <div className="mt-3 flex items-end gap-3">
             <div className="flex-1">
               <Label className="text-xs">Start</Label>

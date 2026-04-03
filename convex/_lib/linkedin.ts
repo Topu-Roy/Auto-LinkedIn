@@ -3,7 +3,7 @@
  * Uses the LinkedIn REST API v2 with w_member_social scope.
  */
 
-const LINKEDIN_API_BASE = "https://api.linkedin.com/v2"
+import { API, LINKEDIN } from "@/lib/config"
 
 /**
  * Creates a text post on LinkedIn.
@@ -14,27 +14,27 @@ const LINKEDIN_API_BASE = "https://api.linkedin.com/v2"
  * @returns LinkedIn post ID or URN
  */
 export async function createTextPost(accessToken: string, text: string, authorUrn: string): Promise<string> {
-  const response = await fetch(`${LINKEDIN_API_BASE}/posts`, {
+  const response = await fetch(`${API.LINKEDIN_API_BASE}/posts`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${accessToken}`,
-      "Content-Type": "application/json",
-      "X-Restli-Protocol-Version": "2.0.0",
-      "LinkedIn-Version": "202411",
+      "Content-Type": LINKEDIN.HEADERS.CONTENT_TYPE_JSON,
+      "X-Restli-Protocol-Version": LINKEDIN.HEADERS.RESTLI_PROTOCOL_VERSION,
+      "LinkedIn-Version": LINKEDIN.HEADERS.LINKEDIN_VERSION,
     },
     body: JSON.stringify({
       author: authorUrn,
-      lifecycleState: "PUBLISHED",
+      lifecycleState: LINKEDIN.BODY.LIFECYCLE_STATE,
       specificContent: {
         "com.linkedin.ugc.ShareContent": {
           shareCommentary: {
             text,
           },
-          shareMediaCategory: "NONE",
+          shareMediaCategory: LINKEDIN.BODY.SHARE_MEDIA_TEXT,
         },
       },
       visibility: {
-        "com.linkedin.ugc.MemberNetworkVisibility": "PUBLIC",
+        "com.linkedin.ugc.MemberNetworkVisibility": LINKEDIN.BODY.VISIBILITY,
       },
     }),
   })
@@ -44,10 +44,10 @@ export async function createTextPost(accessToken: string, text: string, authorUr
     throw new Error(`LinkedIn API error (${response.status}): ${error}`)
   }
 
-  const idHeader = response.headers.get("x-restli-id")
+  const idHeader = response.headers.get(LINKEDIN.RESPONSE_HEADERS.RESTLI_ID)
   if (idHeader) return idHeader
 
-  const location = response.headers.get("location")
+  const location = response.headers.get(LINKEDIN.RESPONSE_HEADERS.LOCATION)
   if (location) {
     const parts = location.split("/")
     return parts[parts.length - 1] ?? ""
@@ -62,7 +62,7 @@ export async function createTextPost(accessToken: string, text: string, authorUr
  *
  * @param accessToken - The user's LinkedIn access token
  * @param authorUrn - The LinkedIn person URN
- * @param fileSize - Size of the image in bytes
+ * @param _fileSize - Size of the image in bytes (reserved for future use)
  * @returns Upload registration data with upload URL and asset URN
  */
 export async function registerImageUpload(
@@ -70,21 +70,21 @@ export async function registerImageUpload(
   authorUrn: string,
   _fileSize: number
 ): Promise<{ uploadUrl: string; asset: string; assetId: string }> {
-  const response = await fetch(`${LINKEDIN_API_BASE}/assets?action=registerUpload`, {
+  const response = await fetch(`${API.LINKEDIN_API_BASE}/assets?action=registerUpload`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${accessToken}`,
-      "Content-Type": "application/json",
-      "X-Restli-Protocol-Version": "2.0.0",
+      "Content-Type": LINKEDIN.HEADERS.CONTENT_TYPE_JSON,
+      "X-Restli-Protocol-Version": LINKEDIN.HEADERS.RESTLI_PROTOCOL_VERSION,
     },
     body: JSON.stringify({
       registerUploadRequest: {
-        recipes: ["urn:li:digitalmediaRecipe:feedshare-image"],
+        recipes: [LINKEDIN.BODY.IMAGE_RECIPE],
         owner: authorUrn,
         serviceRelationships: [
           {
-            relationshipType: "OWNER",
-            identifier: "urn:li:userGeneratedContent",
+            relationshipType: LINKEDIN.BODY.RELATIONSHIP_TYPE,
+            identifier: LINKEDIN.BODY.RELATIONSHIP_IDENTIFIER,
           },
         ],
       },
@@ -126,7 +126,7 @@ export async function uploadImage(uploadUrl: string, imageBytes: ArrayBuffer | B
     method: "POST",
     headers: {
       Authorization: "",
-      "Content-Type": "application/octet-stream",
+      "Content-Type": LINKEDIN.HEADERS.CONTENT_TYPE_OCTET,
     },
     body: imageBytes,
   })
@@ -149,39 +149,39 @@ export async function createImagePost(
   authorUrn: string,
   imageAssetUrn: string
 ): Promise<string> {
-  const response = await fetch(`${LINKEDIN_API_BASE}/posts`, {
+  const response = await fetch(`${API.LINKEDIN_API_BASE}/posts`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${accessToken}`,
-      "Content-Type": "application/json",
-      "X-Restli-Protocol-Version": "2.0.0",
-      "LinkedIn-Version": "202411",
+      "Content-Type": LINKEDIN.HEADERS.CONTENT_TYPE_JSON,
+      "X-Restli-Protocol-Version": LINKEDIN.HEADERS.RESTLI_PROTOCOL_VERSION,
+      "LinkedIn-Version": LINKEDIN.HEADERS.LINKEDIN_VERSION,
     },
     body: JSON.stringify({
       author: authorUrn,
-      lifecycleState: "PUBLISHED",
+      lifecycleState: LINKEDIN.BODY.LIFECYCLE_STATE,
       specificContent: {
         "com.linkedin.ugc.ShareContent": {
           shareCommentary: {
             text,
           },
-          shareMediaCategory: "IMAGE",
+          shareMediaCategory: LINKEDIN.BODY.SHARE_MEDIA_IMAGE,
           media: [
             {
-              status: "READY",
+              status: LINKEDIN.BODY.MEDIA_STATUS,
               description: {
                 text,
               },
               media: imageAssetUrn,
               title: {
-                text: "Shared via Auto-LinkedIn",
+                text: LINKEDIN.BODY.MEDIA_TITLE,
               },
             },
           ],
         },
       },
       visibility: {
-        "com.linkedin.ugc.MemberNetworkVisibility": "PUBLIC",
+        "com.linkedin.ugc.MemberNetworkVisibility": LINKEDIN.BODY.VISIBILITY,
       },
     }),
   })
@@ -191,10 +191,10 @@ export async function createImagePost(
     throw new Error(`LinkedIn API error (${response.status}): ${error}`)
   }
 
-  const idHeader = response.headers.get("x-restli-id")
+  const idHeader = response.headers.get(LINKEDIN.RESPONSE_HEADERS.RESTLI_ID)
   if (idHeader) return idHeader
 
-  const location = response.headers.get("location")
+  const location = response.headers.get(LINKEDIN.RESPONSE_HEADERS.LOCATION)
   if (location) {
     const parts = location.split("/")
     return parts[parts.length - 1] ?? ""
@@ -210,7 +210,7 @@ export async function createImagePost(
  * @returns Object containing the person URN and basic profile info
  */
 export async function getProfileInfo(accessToken: string): Promise<{ urn: string; name: string }> {
-  const response = await fetch(`${LINKEDIN_API_BASE}/userinfo`, {
+  const response = await fetch(`${API.LINKEDIN_API_BASE}/userinfo`, {
     headers: {
       Authorization: `Bearer ${accessToken}`,
     },
@@ -225,7 +225,7 @@ export async function getProfileInfo(accessToken: string): Promise<{ urn: string
   const urn = data.sub ?? ""
 
   return {
-    urn: `urn:li:person:${urn}`,
+    urn: `${LINKEDIN.BODY.PERSON_URN_PREFIX}${urn}`,
     name: data.name ?? "",
   }
 }

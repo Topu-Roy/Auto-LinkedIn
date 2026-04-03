@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { formatDistanceToNow } from "date-fns"
+import { TIME } from "@/lib/config"
 
 export function CountdownTimer({ targetTimestamp }: { targetTimestamp: number }) {
   const [now, setNow] = useState(() => Date.now())
@@ -9,7 +10,7 @@ export function CountdownTimer({ targetTimestamp }: { targetTimestamp: number })
   useEffect(() => {
     const interval = setInterval(() => {
       setNow(Date.now())
-    }, 1000)
+    }, TIME.COUNTDOWN_REFRESH_MS)
     return () => clearInterval(interval)
   }, [])
 

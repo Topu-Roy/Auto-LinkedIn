@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { Plus, Sparkles, X } from "lucide-react"
+import { LIMITS } from "@/lib/config"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
@@ -79,7 +80,7 @@ export function StepVoice({
             </div>
           ))}
         </div>
-        {voiceData.examplePosts.length < 3 && (
+        {voiceData.examplePosts.length < LIMITS.MAX_EXAMPLE_POSTS && (
           <div className="mt-2 flex gap-2">
             <Textarea
               placeholder="Paste an example post here..."

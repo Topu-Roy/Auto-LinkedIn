@@ -1,4 +1,5 @@
 import { GoogleGenAI } from "@google/genai"
+import { GEMINI, IMAGE_PROMPT, LIMITS } from "@/lib/config"
 
 let ai: GoogleGenAI | null = null
 
@@ -18,8 +19,8 @@ function getGeminiClient(): GoogleGenAI {
  */
 export async function scoreRelevance(title: string, summary: string, topic: string): Promise<number> {
   const response = await getGeminiClient().models.generateContent({
-    model: "gemini-2.0-flash",
-    contents: `Score the relevance of this content to the topic "${topic}" on a scale of 1-10.
+    model: GEMINI.MODELS.TEXT,
+    contents: `Score the relevance of this content to the topic "${topic}" on a scale of ${GEMINI.SCORE.MIN}-${GEMINI.SCORE.MAX}.
 Return ONLY the number, nothing else.
 
 Title: ${title}
@@ -28,7 +29,7 @@ Summary: ${summary}`,
 
   const text = response.text?.trim() ?? "0"
   const score = parseInt(text, 10)
-  return isNaN(score) ? 0 : Math.min(10, Math.max(1, score))
+  return isNaN(score) ? 0 : Math.min(GEMINI.SCORE.MAX, Math.max(GEMINI.SCORE.MIN, score))
 }
 
 /**
@@ -53,11 +54,11 @@ export async function generateDraft(
       : ""
 
   const response = await getGeminiClient().models.generateContent({
-    model: "gemini-2.0-flash",
+    model: GEMINI.MODELS.TEXT,
     contents: `You are a LinkedIn content writer. Write a post based on the following source material.
 
 RULES:
-- Post must be 300-1000 characters
+- Post must be ${GEMINI.CONTENT.MIN_CHARS}-${GEMINI.CONTENT.MAX_CHARS} characters
 - Write in the following tone: ${voiceDescription}
 - Do NOT hallucinate information not present in the source
 - Include a hook in the first line
@@ -74,13 +75,16 @@ Return your response as JSON in this exact format:
   "confidenceScore": 8
 }
 
-confidenceScore is how confident you are that this post will perform well on LinkedIn (1-10).`,
+confidenceScore is how confident you are that this post will perform well on LinkedIn (${GEMINI.SCORE.MIN}-${GEMINI.SCORE.MAX}).`,
   })
 
   const text = response.text?.trim() ?? "{}"
   const jsonMatch = /\{[\s\S]*\}/.exec(text)
   if (!jsonMatch) {
-    return { content: `New post about: ${sourceTitle}\n\n${sourceSummary}`, confidenceScore: 5 }
+    return {
+      content: `New post about: ${sourceTitle}\n\n${sourceSummary}`,
+      confidenceScore: LIMITS.DEFAULT_CONFIDENCE_SCORE,
+    }
   }
 
   try {
@@ -89,10 +93,13 @@ confidenceScore is how confident you are that this post will perform well on Lin
     const confidenceScore = typeof parsed.confidenceScore === "number" ? parsed.confidenceScore : undefined
     return {
       content: content ?? `New post about: ${sourceTitle}`,
-      confidenceScore: confidenceScore ?? 5,
+      confidenceScore: confidenceScore ?? LIMITS.DEFAULT_CONFIDENCE_SCORE,
     }
   } catch {
-    return { content: `New post about: ${sourceTitle}\n\n${sourceSummary}`, confidenceScore: 5 }
+    return {
+      content: `New post about: ${sourceTitle}\n\n${sourceSummary}`,
+      confidenceScore: LIMITS.DEFAULT_CONFIDENCE_SCORE,
+    }
   }
 }
 
@@ -105,15 +112,17 @@ confidenceScore is how confident you are that this post will perform well on Lin
  */
 export async function generateImagePrompt(postContent: string): Promise<string> {
   const response = await getGeminiClient().models.generateContent({
-    model: "gemini-2.0-flash",
-    contents: `Create a detailed image generation prompt for a 1080x1080 square image that would complement this LinkedIn post.
+    model: GEMINI.MODELS.TEXT,
+    contents: `Create a detailed image generation prompt for a ${GEMINI.IMAGE.DIMENSIONS_LABEL} square image that would complement this LinkedIn post.
 The image should be professional, visually engaging, and relevant to the post topic.
 Return ONLY the prompt, nothing else.
 
 Post: ${postContent}`,
   })
 
-  return response.text?.trim() ?? `Professional illustration about: ${postContent.slice(0, 100)}`
+  return (
+    response.text?.trim() ?? IMAGE_PROMPT.FALLBACK(postContent.slice(0, GEMINI.CONTENT.FALLBACK_PROMPT_TRUNCATE))
+  )
 }
 
 /**
@@ -125,11 +134,11 @@ Post: ${postContent}`,
  */
 export async function generateImage(prompt: string): Promise<string> {
   const response = await getGeminiClient().models.generateImages({
-    model: "gemini-2.0-flash-exp",
+    model: GEMINI.MODELS.IMAGE,
     prompt,
     config: {
-      numberOfImages: 1,
-      aspectRatio: "1:1",
+      numberOfImages: GEMINI.IMAGE.NUMBER_OF_IMAGES,
+      aspectRatio: GEMINI.IMAGE.ASPECT_RATIO,
     },
   })
 

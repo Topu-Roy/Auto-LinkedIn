@@ -9,7 +9,8 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 
-type ViewMode = "month" | "week" | "day"
+const VIEW_MODES = ["month", "week", "day"] as const
+type ViewMode = (typeof VIEW_MODES)[number]
 
 export default function SchedulePage() {
   const posts = useQuery(api.queries.schedule.listAll)
@@ -67,7 +68,7 @@ export default function SchedulePage() {
         </div>
         <div className="flex items-center gap-2">
           <div className="flex rounded-lg border">
-            {(["month", "week", "day"] as ViewMode[]).map(mode => (
+            {VIEW_MODES.map(mode => (
               <Button
                 key={mode}
                 variant={viewMode === mode ? "default" : "ghost"}

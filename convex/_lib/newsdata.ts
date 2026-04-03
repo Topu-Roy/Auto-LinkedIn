@@ -3,7 +3,7 @@
  * Fetches news articles by topic/category/keyword.
  */
 
-const NEWSDATA_API_BASE = "https://newsdata.io/api/1"
+import { API, DEFAULTS, LIMITS, TOPIC_TO_CATEGORY_MAP } from "@/lib/config"
 
 /**
  * Result from a NewsData.io article search.
@@ -30,20 +30,20 @@ export interface NewsArticle {
 export async function fetchNewsArticles(
   query: string,
   category?: string,
-  language = "en"
+  language = DEFAULTS.LANGUAGE
 ): Promise<NewsArticle[]> {
   const params = new URLSearchParams({
     apikey: process.env.NEWSDATA_API_KEY!,
     q: query,
     language,
-    size: "20",
+    size: String(LIMITS.NEWSDATA_PAGE_SIZE),
   })
 
   if (category) {
     params.set("category", category)
   }
 
-  const response = await fetch(`${NEWSDATA_API_BASE}/news?${params.toString()}`)
+  const response = await fetch(`${API.NEWSDATA_BASE}/news?${params.toString()}`)
 
   if (!response.ok) {
     const error = await response.text()
@@ -67,25 +67,4 @@ export async function fetchNewsArticles(
  * Topic to NewsData.io category mapping.
  * Maps our curated topics to NewsData.io's category system.
  */
-export const TOPIC_TO_CATEGORY_MAP: Record<string, string> = {
-  "Artificial Intelligence & Machine Learning": "technology",
-  "Software Engineering & Development": "technology",
-  "SaaS & Cloud Computing": "technology",
-  "Digital Marketing & Growth": "business",
-  "Leadership & Management": "business",
-  "Productivity & Time Management": "business",
-  "Entrepreneurship & Startups": "business",
-  "Product Management": "technology",
-  "Data Science & Analytics": "technology",
-  Cybersecurity: "technology",
-  "Remote Work & Future of Work": "business",
-  "Personal Branding": "business",
-  "Sales & Business Development": "business",
-  "UX/UI Design": "technology",
-  "Web3 & Blockchain": "technology",
-  "Fintech & Financial Technology": "business",
-  "E-commerce & Retail Tech": "business",
-  "HR & Talent Acquisition": "business",
-  "Customer Success & Support": "business",
-  "DevOps & Infrastructure": "technology",
-}
+export { TOPIC_TO_CATEGORY_MAP }

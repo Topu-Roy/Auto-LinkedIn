@@ -1,5 +1,6 @@
 "use node"
 
+import { DISCOVERY_STATUS, LIMITS } from "@/lib/config"
 import { internal } from "../_generated/api"
 import { internalAction } from "../_generated/server"
 import { scoreRelevance } from "../_lib/gemini"
@@ -18,7 +19,7 @@ export const run = internalAction({
 
       const userHour = new Date(now.toLocaleString("en-US", { timeZone: profile.timezone })).getHours()
 
-      const isActiveWindow = profile.timeWindows.some(window => {
+      const isActiveWindow = profile.timeWindows.some((window: { start: string; end: string }) => {
         const [startHour] = window.start.split(":").map(Number)
         const [endHour] = window.end.split(":").map(Number)
         return userHour >= startHour && userHour <= endHour
@@ -48,7 +49,7 @@ export const run = internalAction({
 
             const relevanceScore = await scoreRelevance(article.title, article.description, topic.name)
 
-            if (relevanceScore >= 4) {
+            if (relevanceScore >= LIMITS.MIN_RELEVANCE_SCORE) {
               await ctx.runMutation(internal.mutations.discoveredContent.create, {
                 userId: profile.userId,
                 sourceUrl: article.link,
@@ -56,7 +57,7 @@ export const run = internalAction({
                 summary: article.description,
                 relevanceScore,
                 topicId: topic._id,
-                status: "queued",
+                status: DISCOVERY_STATUS.QUEUED,
                 discoveredAt: Date.now(),
               })
             }

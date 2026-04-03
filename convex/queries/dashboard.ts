@@ -1,3 +1,4 @@
+import { DRAFT_STATUS } from "@/lib/config"
 import { query } from "../_generated/server"
 
 export const getFailedPosts = query({
@@ -10,7 +11,7 @@ export const getFailedPosts = query({
 
     return await ctx.db
       .query("generatedDrafts")
-      .withIndex("userId_status", q => q.eq("userId", userId).eq("status", "failed"))
+      .withIndex("userId_status", q => q.eq("userId", userId).eq("status", DRAFT_STATUS.FAILED))
       .collect()
   },
 })
@@ -31,7 +32,7 @@ export const getNextScheduledPost = query({
       .collect()
 
     const upcoming = all.filter(
-      item => item.scheduledAt !== undefined && item.scheduledAt > now && item.status === "scheduled"
+      item => item.scheduledAt !== undefined && item.scheduledAt > now && item.status === DRAFT_STATUS.SCHEDULED
     )
     return upcoming[0] ?? null
   },

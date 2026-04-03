@@ -1,4 +1,5 @@
 import { v } from "convex/values"
+import { ERRORS, WEIGHT } from "@/lib/config"
 import { mutation, query } from "../_generated/server"
 
 export const list = query({
@@ -19,13 +20,13 @@ export const list = query({
 export const create = mutation({
   args: {
     name: v.string(),
-    weight: v.union(v.literal("Low"), v.literal("Medium"), v.literal("High")),
+    weight: v.union(v.literal(WEIGHT.LOW), v.literal(WEIGHT.MEDIUM), v.literal(WEIGHT.HIGH)),
     newsDataCategory: v.optional(v.string()),
     rssFeeds: v.optional(v.array(v.string())),
   },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity()
-    if (!identity) throw new Error("Unauthenticated")
+    if (!identity) throw new Error(ERRORS.UNAUTHENTICATED)
 
     const userId = identity.subject
 
@@ -48,7 +49,7 @@ export const createMany = mutation({
     topics: v.array(
       v.object({
         name: v.string(),
-        weight: v.union(v.literal("Low"), v.literal("Medium"), v.literal("High")),
+        weight: v.union(v.literal(WEIGHT.LOW), v.literal(WEIGHT.MEDIUM), v.literal(WEIGHT.HIGH)),
         newsDataCategory: v.optional(v.string()),
         rssFeeds: v.optional(v.array(v.string())),
       })
@@ -56,7 +57,7 @@ export const createMany = mutation({
   },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity()
-    if (!identity) throw new Error("Unauthenticated")
+    if (!identity) throw new Error(ERRORS.UNAUTHENTICATED)
 
     const userId = identity.subject
     const now = Date.now()
@@ -85,20 +86,20 @@ export const update = mutation({
   args: {
     id: v.id("topics"),
     name: v.optional(v.string()),
-    weight: v.optional(v.union(v.literal("Low"), v.literal("Medium"), v.literal("High"))),
+    weight: v.optional(v.union(v.literal(WEIGHT.LOW), v.literal(WEIGHT.MEDIUM), v.literal(WEIGHT.HIGH))),
     isActive: v.optional(v.boolean()),
     isPaused: v.optional(v.boolean()),
     rssFeeds: v.optional(v.array(v.string())),
   },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity()
-    if (!identity) throw new Error("Unauthenticated")
+    if (!identity) throw new Error(ERRORS.UNAUTHENTICATED)
 
     const userId = identity.subject
     const { id, ...updates } = args
 
     const topic = await ctx.db.get("topics", id)
-    if (topic?.userId !== userId) throw new Error("Topic not found")
+    if (topic?.userId !== userId) throw new Error(ERRORS.TOPIC_NOT_FOUND)
 
     await ctx.db.patch("topics", id, updates)
   },
@@ -110,12 +111,12 @@ export const remove = mutation({
   },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity()
-    if (!identity) throw new Error("Unauthenticated")
+    if (!identity) throw new Error(ERRORS.UNAUTHENTICATED)
 
     const userId = identity.subject
 
     const topic = await ctx.db.get("topics", args.id)
-    if (topic?.userId !== userId) throw new Error("Topic not found")
+    if (topic?.userId !== userId) throw new Error(ERRORS.TOPIC_NOT_FOUND)
 
     await ctx.db.delete("topics", args.id)
   },

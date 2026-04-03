@@ -1,5 +1,6 @@
 "use node"
 
+import { DRAFT_STATUS, LIMITS, TOKEN_STATUS } from "@/lib/config"
 import { internal } from "../_generated/api"
 import { internalAction } from "../_generated/server"
 import { decrypt } from "../_lib/encryption"
@@ -15,7 +16,7 @@ export const run = internalAction({
         id: scheduleItem.draftId,
       })
 
-      if (draft?.status !== "scheduled") continue
+      if (draft?.status !== DRAFT_STATUS.SCHEDULED) continue
 
       await ctx.runMutation(internal.mutations.generatedDrafts.markPublishing, {
         id: draft._id,
@@ -30,7 +31,7 @@ export const run = internalAction({
           userId: scheduleItem.userId,
         })
 
-        if (!tokenRecord || tokenRecord.tokenStatus === "hard_expired") {
+        if (!tokenRecord || tokenRecord.tokenStatus === TOKEN_STATUS.HARD_EXPIRED) {
           await ctx.runMutation(internal.mutations.generatedDrafts.markFailed, {
             id: draft._id,
           })
@@ -62,9 +63,9 @@ export const run = internalAction({
       } catch (error) {
         console.error(`Failed to publish draft ${draft._id}:`, error)
 
-        const retryCount = (draft.retryCount ?? 0) + 1
+        const retryCount = (draft.retryCount ?? LIMITS.DEFAULT_RETRY_COUNT) + 1
 
-        if (retryCount < 3) {
+        if (retryCount < LIMITS.MAX_PUBLISH_RETRIES) {
           await ctx.runMutation(internal.mutations.generatedDrafts.scheduleRetry, {
             id: draft._id,
             retryCount,

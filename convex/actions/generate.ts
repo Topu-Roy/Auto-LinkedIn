@@ -1,6 +1,7 @@
 "use node"
 
 import { v } from "convex/values"
+import { GEMINI, LIMITS } from "@/lib/config"
 import { internal } from "../_generated/api"
 import type { Id } from "../_generated/dataModel"
 import { internalAction } from "../_generated/server"
@@ -19,7 +20,7 @@ export const run = internalAction({
       userId: args.userId,
     })
 
-    const remainingSlots = Math.max(0, 5 - generationCount)
+    const remainingSlots = Math.max(0, LIMITS.MAX_DRAFTS_PER_DAY - generationCount)
     const itemsToProcess = queuedItems.slice(0, remainingSlots)
 
     if (itemsToProcess.length === 0) return
@@ -28,7 +29,7 @@ export const run = internalAction({
       userId: args.userId,
     })
 
-    const voiceDescription = voiceProfile?.toneDescription ?? "Professional and informative"
+    const voiceDescription = voiceProfile?.toneDescription ?? GEMINI.DEFAULT_VOICE
     const examplePosts = voiceProfile?.examplePosts ?? []
 
     const results = await Promise.allSettled(
@@ -46,7 +47,7 @@ export const run = internalAction({
 
           let imageFileId: Id<"_storage"> | undefined
           if (imageBytes) {
-            const blob = new Blob([Buffer.from(imageBytes, "base64")], { type: "image/png" })
+            const blob = new Blob([Buffer.from(imageBytes, "base64")], { type: GEMINI.IMAGE.MIME_TYPE })
             imageFileId = await ctx.storage.store(blob)
           }
 

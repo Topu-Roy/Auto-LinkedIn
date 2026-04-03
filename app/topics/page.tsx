@@ -6,14 +6,13 @@ import type { Id } from "@/convex/_generated/dataModel"
 import { useMutation, useQuery } from "convex/react"
 import { Pause, Play, Plus, Rss, X } from "lucide-react"
 import { toast } from "sonner"
+import { STATUS_BADGE_CONFIG, WEIGHT, WEIGHT_ORDER } from "@/lib/config"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-
-const weightOrder: Record<string, number> = { High: 3, Medium: 2, Low: 1 }
 
 export default function TopicsPage() {
   const topics = useQuery(api.queries.topics.list)
@@ -22,13 +21,13 @@ export default function TopicsPage() {
   const createTopic = useMutation(api.mutations.topics.create)
 
   const [newTopicName, setNewTopicName] = useState("")
-  const [newTopicWeight, setNewTopicWeight] = useState<"Low" | "Medium" | "High">("Medium")
+  const [newTopicWeight, setNewTopicWeight] = useState<"Low" | "Medium" | "High">(WEIGHT.MEDIUM)
   const [newTopicCategory, setNewTopicCategory] = useState("")
   const [newRssFeed, setNewRssFeed] = useState("")
   const [addingRssTo, setAddingRssTo] = useState<string | null>(null)
 
   const sortedTopics = [...(topics ?? [])].sort(
-    (a, b) => (weightOrder[b.weight] ?? 0) - (weightOrder[a.weight] ?? 0)
+    (a, b) => (WEIGHT_ORDER[b.weight] ?? 0) - (WEIGHT_ORDER[a.weight] ?? 0)
   )
 
   const handlePause = async (id: string, isPaused: boolean) => {
@@ -101,7 +100,7 @@ export default function TopicsPage() {
         newsDataCategory: newTopicCategory || undefined,
       })
       setNewTopicName("")
-      setNewTopicWeight("Medium")
+      setNewTopicWeight(WEIGHT.MEDIUM)
       setNewTopicCategory("")
       toast.success("Topic created")
     } catch {
@@ -176,12 +175,16 @@ export default function TopicsPage() {
                   <div className="mt-1 flex items-center gap-2">
                     <Badge
                       variant={
-                        topic.weight === "High" ? "default" : topic.weight === "Medium" ? "secondary" : "outline"
+                        topic.weight === WEIGHT.HIGH
+                          ? "default"
+                          : topic.weight === WEIGHT.MEDIUM
+                            ? "secondary"
+                            : "outline"
                       }
                     >
                       {topic.weight}
                     </Badge>
-                    {topic.isPaused && <Badge variant="destructive">Paused</Badge>}
+                    {topic.isPaused && <Badge variant="destructive">{STATUS_BADGE_CONFIG.paused.label}</Badge>}
                   </div>
                 </div>
                 <Button
@@ -205,9 +208,9 @@ export default function TopicsPage() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Low">Low</SelectItem>
-                    <SelectItem value="Medium">Medium</SelectItem>
-                    <SelectItem value="High">High</SelectItem>
+                    <SelectItem value={WEIGHT.LOW}>{WEIGHT.LOW}</SelectItem>
+                    <SelectItem value={WEIGHT.MEDIUM}>{WEIGHT.MEDIUM}</SelectItem>
+                    <SelectItem value={WEIGHT.HIGH}>{WEIGHT.HIGH}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

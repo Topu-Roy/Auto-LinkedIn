@@ -4,6 +4,7 @@ import { api } from "@/convex/_generated/api"
 import { useQuery } from "convex/react"
 import { CheckCircle2, Clock, FileText, ShieldAlert } from "lucide-react"
 import { useRouter } from "next/navigation"
+import { LIMITS, TOKEN_STATUS } from "@/lib/config"
 import { CountdownTimer } from "@/components/shared/countdown-timer"
 import { StatusBadge } from "@/components/shared/status-badge"
 import { Button } from "@/components/ui/button"
@@ -46,7 +47,7 @@ export default function DashboardPage() {
   const pendingCount = drafts?.length ?? 0
   const scheduledCount = scheduledPosts?.length ?? 0
   const publishedCount = publishedPosts?.length ?? 0
-  const hasTokenIssue = tokenStatus === "expiring_soon" || tokenStatus === "hard_expired"
+  const hasTokenIssue = tokenStatus === TOKEN_STATUS.EXPIRING_SOON || tokenStatus === TOKEN_STATUS.HARD_EXPIRED
   const hasFailedPosts = (failedPosts?.length ?? 0) > 0
 
   return (
@@ -62,7 +63,7 @@ export default function DashboardPage() {
           <div className="flex-1">
             <p className="font-medium">LinkedIn Connection Issue</p>
             <p className="text-sm text-muted-foreground">
-              {tokenStatus === "hard_expired"
+              {tokenStatus === TOKEN_STATUS.HARD_EXPIRED
                 ? "Your LinkedIn token has expired. Reconnect to resume publishing."
                 : "Your LinkedIn token is expiring soon. Reconnect to avoid interruption."}
             </p>
@@ -125,7 +126,7 @@ export default function DashboardPage() {
           </div>
         ) : (
           <div className="space-y-2">
-            {scheduledPosts?.slice(0, 5).map(post => (
+            {scheduledPosts?.slice(0, LIMITS.DASHBOARD_SCHEDULED_LIMIT).map(post => (
               <div key={post._id} className="flex items-center justify-between rounded-lg border p-3">
                 <div className="flex items-center gap-3">
                   <StatusBadge status={post.status} />

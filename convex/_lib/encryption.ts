@@ -3,9 +3,7 @@
  * Works in both browser and Convex V8 runtime.
  */
 
-const ALGORITHM = "AES-GCM"
-const IV_LENGTH = 12
-const SALT_LENGTH = 16
+import { ENCRYPTION } from "@/lib/config"
 
 /**
  * Derives a CryptoKey from the ENCRYPTION_KEY environment variable using PBKDF2.
@@ -24,12 +22,12 @@ async function getEncryptionKey(): Promise<CryptoKey> {
   return crypto.subtle.deriveKey(
     {
       name: "PBKDF2",
-      salt: encoder.encode("linkedin-token-salt"),
-      iterations: 100000,
-      hash: "SHA-256",
+      salt: encoder.encode(ENCRYPTION.PBKDF2_SALT),
+      iterations: ENCRYPTION.PBKDF2_ITERATIONS,
+      hash: ENCRYPTION.PBKDF2_HASH,
     },
     keyMaterial,
-    { name: ALGORITHM, length: 256 },
+    { name: ENCRYPTION.ALGORITHM, length: ENCRYPTION.AES_KEY_LENGTH },
     false,
     ["encrypt", "decrypt"]
   )
@@ -46,10 +44,10 @@ export async function encrypt(text: string): Promise<string> {
   const key = await getEncryptionKey()
   const encoder = new TextEncoder()
 
-  const salt = crypto.getRandomValues(new Uint8Array(SALT_LENGTH))
-  const iv = crypto.getRandomValues(new Uint8Array(IV_LENGTH))
+  const salt = crypto.getRandomValues(new Uint8Array(ENCRYPTION.SALT_LENGTH))
+  const iv = crypto.getRandomValues(new Uint8Array(ENCRYPTION.IV_LENGTH))
 
-  const encrypted = await crypto.subtle.encrypt({ name: ALGORITHM, iv }, key, encoder.encode(text))
+  const encrypted = await crypto.subtle.encrypt({ name: ENCRYPTION.ALGORITHM, iv }, key, encoder.encode(text))
 
   const encryptedBytes = new Uint8Array(encrypted)
   const combined = new Uint8Array(salt.length + iv.length + encryptedBytes.length)
@@ -75,12 +73,12 @@ export async function decrypt(encryptedText: string): Promise<string> {
       .map(c => c.charCodeAt(0))
   )
 
-  const _salt = combined.subarray(0, SALT_LENGTH)
+  const _salt = combined.subarray(0, ENCRYPTION.SALT_LENGTH)
   void _salt
-  const iv = combined.subarray(SALT_LENGTH, SALT_LENGTH + IV_LENGTH)
-  const ciphertext = combined.subarray(SALT_LENGTH + IV_LENGTH)
+  const iv = combined.subarray(ENCRYPTION.SALT_LENGTH, ENCRYPTION.SALT_LENGTH + ENCRYPTION.IV_LENGTH)
+  const ciphertext = combined.subarray(ENCRYPTION.SALT_LENGTH + ENCRYPTION.IV_LENGTH)
 
-  const decrypted = await crypto.subtle.decrypt({ name: ALGORITHM, iv }, key, ciphertext)
+  const decrypted = await crypto.subtle.decrypt({ name: ENCRYPTION.ALGORITHM, iv }, key, ciphertext)
 
   return new TextDecoder().decode(decrypted)
 }

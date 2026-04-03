@@ -1,17 +1,18 @@
 import { v } from "convex/values"
+import { TOKEN_STATUS } from "@/lib/config"
 import { internalMutation } from "../_generated/server"
 
 export const markHardExpired = internalMutation({
   args: { id: v.id("linkedinTokens") },
   handler: async (ctx, args) => {
-    await ctx.db.patch("linkedinTokens", args.id, { tokenStatus: "hard_expired" })
+    await ctx.db.patch("linkedinTokens", args.id, { tokenStatus: TOKEN_STATUS.HARD_EXPIRED })
   },
 })
 
 export const markExpiringSoon = internalMutation({
   args: { id: v.id("linkedinTokens") },
   handler: async (ctx, args) => {
-    await ctx.db.patch("linkedinTokens", args.id, { tokenStatus: "expiring_soon" })
+    await ctx.db.patch("linkedinTokens", args.id, { tokenStatus: TOKEN_STATUS.EXPIRING_SOON })
   },
 })
 
@@ -27,7 +28,7 @@ export const updateAfterRefresh = internalMutation({
 
     await ctx.db.patch("linkedinTokens", args.id, {
       ...rest,
-      tokenStatus: "active",
+      tokenStatus: TOKEN_STATUS.ACTIVE,
       lastRefreshedAt: Date.now(),
       ...(encryptedRefreshToken ? { encryptedRefreshToken } : {}),
     })
@@ -52,7 +53,7 @@ export const createOrUpdate = internalMutation({
         encryptedAccessToken: args.encryptedAccessToken,
         encryptedRefreshToken: args.encryptedRefreshToken,
         expiresAt: args.expiresAt,
-        tokenStatus: "active",
+        tokenStatus: TOKEN_STATUS.ACTIVE,
         lastRefreshedAt: Date.now(),
       })
       return existing._id
@@ -63,7 +64,7 @@ export const createOrUpdate = internalMutation({
       encryptedAccessToken: args.encryptedAccessToken,
       encryptedRefreshToken: args.encryptedRefreshToken,
       expiresAt: args.expiresAt,
-      tokenStatus: "active",
+      tokenStatus: TOKEN_STATUS.ACTIVE,
       lastRefreshedAt: Date.now(),
     })
   },

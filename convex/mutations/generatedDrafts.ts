@@ -1,4 +1,5 @@
 import { v } from "convex/values"
+import { DRAFT_STATUS, LIMITS } from "@/lib/config"
 import { internalMutation, internalQuery } from "../_generated/server"
 
 export const getTodayCount = internalQuery({
@@ -36,8 +37,8 @@ export const createFromDiscovery = internalMutation({
   handler: async (ctx, args) => {
     return await ctx.db.insert("generatedDrafts", {
       ...args,
-      status: "pending_review",
-      retryCount: 0,
+      status: DRAFT_STATUS.PENDING_REVIEW,
+      retryCount: LIMITS.DEFAULT_RETRY_COUNT,
       createdAt: Date.now(),
     })
   },
@@ -46,7 +47,7 @@ export const createFromDiscovery = internalMutation({
 export const markPublishing = internalMutation({
   args: { id: v.id("generatedDrafts") },
   handler: async (ctx, args) => {
-    await ctx.db.patch("generatedDrafts", args.id, { status: "publishing" })
+    await ctx.db.patch("generatedDrafts", args.id, { status: DRAFT_STATUS.PUBLISHING })
   },
 })
 
@@ -54,7 +55,7 @@ export const markPublished = internalMutation({
   args: { id: v.id("generatedDrafts"), linkedinPostId: v.string() },
   handler: async (ctx, args) => {
     await ctx.db.patch("generatedDrafts", args.id, {
-      status: "published",
+      status: DRAFT_STATUS.PUBLISHED,
       linkedinPostId: args.linkedinPostId,
     })
   },
@@ -63,7 +64,7 @@ export const markPublished = internalMutation({
 export const markFailed = internalMutation({
   args: { id: v.id("generatedDrafts") },
   handler: async (ctx, args) => {
-    await ctx.db.patch("generatedDrafts", args.id, { status: "failed" })
+    await ctx.db.patch("generatedDrafts", args.id, { status: DRAFT_STATUS.FAILED })
   },
 })
 
@@ -71,7 +72,7 @@ export const scheduleRetry = internalMutation({
   args: { id: v.id("generatedDrafts"), retryCount: v.number() },
   handler: async (ctx, args) => {
     await ctx.db.patch("generatedDrafts", args.id, {
-      status: "scheduled",
+      status: DRAFT_STATUS.SCHEDULED,
       retryCount: args.retryCount,
     })
   },

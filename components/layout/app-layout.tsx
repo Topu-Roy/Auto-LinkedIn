@@ -1,22 +1,18 @@
 "use client"
 
 import { type ReactNode } from "react"
-import { Calendar, Compass, FileText, History, LayoutDashboard, Menu, Settings, Tag } from "lucide-react"
+import { Menu } from "lucide-react"
+import * as LucideIcons from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { NAV_ITEMS } from "@/lib/config"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 
-const navItems = [
-  { href: "/dashboard" as const, label: "Dashboard", icon: LayoutDashboard },
-  { href: "/discover" as const, label: "Discover", icon: Compass },
-  { href: "/drafts" as const, label: "Drafts", icon: FileText },
-  { href: "/schedule" as const, label: "Schedule", icon: Calendar },
-  { href: "/history" as const, label: "History", icon: History },
-  { href: "/topics" as const, label: "Topics", icon: Tag },
-  { href: "/settings" as const, label: "Settings", icon: Settings },
-]
+function getIcon(name: string) {
+  return (LucideIcons as unknown as Record<string, React.ComponentType<{ className?: string }>>)[name] ?? Menu
+}
 
 function SidebarContent({ className }: { className?: string }) {
   const pathname = usePathname()
@@ -29,8 +25,9 @@ function SidebarContent({ className }: { className?: string }) {
         </Link>
       </div>
       <nav className="flex flex-1 flex-col gap-1 p-2">
-        {navItems.map(item => {
+        {NAV_ITEMS.map(item => {
           const isActive = pathname === item.href
+          const Icon = getIcon(item.icon)
           return (
             <Link
               key={item.href}
@@ -42,7 +39,7 @@ function SidebarContent({ className }: { className?: string }) {
                   : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
               )}
             >
-              <item.icon className="h-4 w-4" />
+              <Icon className="h-4 w-4" />
               {item.label}
             </Link>
           )

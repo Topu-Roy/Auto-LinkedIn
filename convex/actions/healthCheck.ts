@@ -1,11 +1,9 @@
 "use node"
 
+import { API, LINKEDIN, TIME } from "@/lib/config"
 import { internal } from "../_generated/api"
 import { internalAction } from "../_generated/server"
 import { decrypt, encrypt } from "../_lib/encryption"
-
-const FOURTEEN_DAYS_MS = 14 * 24 * 60 * 60 * 1000
-const THREE_SIXTY_FIVE_DAYS_MS = 365 * 24 * 60 * 60 * 1000
 
 export const run = internalAction({
   args: {},
@@ -24,14 +22,14 @@ export const run = internalAction({
         continue
       }
 
-      if (timeUntilExpiry <= THREE_SIXTY_FIVE_DAYS_MS) {
+      if (timeUntilExpiry <= TIME.THREE_SIXTY_FIVE_DAYS_MS) {
         await ctx.runMutation(internal.mutations.linkedinTokens.markHardExpired, {
           id: record._id,
         })
         continue
       }
 
-      if (timeUntilExpiry <= FOURTEEN_DAYS_MS) {
+      if (timeUntilExpiry <= TIME.FOURTEEN_DAYS_MS) {
         await ctx.runMutation(internal.mutations.linkedinTokens.markExpiringSoon, {
           id: record._id,
         })
@@ -39,11 +37,11 @@ export const run = internalAction({
         try {
           const refreshToken = await decrypt(record.encryptedRefreshToken)
 
-          const response = await fetch("https://www.linkedin.com/oauth/v2/accessToken", {
+          const response = await fetch(API.LINKEDIN_OAUTH_TOKEN, {
             method: "POST",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            headers: { "Content-Type": LINKEDIN.HEADERS.CONTENT_TYPE_FORM },
             body: new URLSearchParams({
-              grant_type: "refresh_token",
+              grant_type: LINKEDIN.OAUTH.GRANT_TYPE_REFRESH,
               refresh_token: refreshToken,
               client_id: process.env.LINKEDIN_CLIENT_ID!,
               client_secret: process.env.LINKEDIN_CLIENT_SECRET!,
@@ -64,7 +62,7 @@ export const run = internalAction({
             id: record._id,
             encryptedAccessToken: await encrypt(data.access_token ?? ""),
             encryptedRefreshToken: data.refresh_token ? await encrypt(data.refresh_token) : undefined,
-            expiresAt: now + (data.expires_in ?? 5184000) * 1000,
+            expiresAt: now + (data.expires_in ?? TIME.DEFAULT_TOKEN_EXPIRY_S) * 1000,
           })
         } catch (error) {
           console.error(`Failed to refresh token for user ${record.userId}:`, error)

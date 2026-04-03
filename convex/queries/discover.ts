@@ -1,3 +1,4 @@
+import { DISCOVERY_STATUS } from "@/lib/config"
 import { query } from "../_generated/server"
 
 export const list = query({
@@ -10,7 +11,7 @@ export const list = query({
 
     return await ctx.db
       .query("discoveredContent")
-      .withIndex("userId_status", q => q.eq("userId", userId).eq("status", "queued"))
+      .withIndex("userId_status", q => q.eq("userId", userId).eq("status", DISCOVERY_STATUS.QUEUED))
       .order("desc")
       .collect()
   },
@@ -26,7 +27,7 @@ export const listPinned = query({
 
     return await ctx.db
       .query("discoveredContent")
-      .withIndex("userId_status", q => q.eq("userId", userId).eq("status", "pinned"))
+      .withIndex("userId_status", q => q.eq("userId", userId).eq("status", DISCOVERY_STATUS.PINNED))
       .collect()
   },
 })

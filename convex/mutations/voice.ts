@@ -1,4 +1,5 @@
 import { v } from "convex/values"
+import { ERRORS } from "@/lib/config"
 import { mutation, query } from "../_generated/server"
 
 export const get = query({
@@ -24,7 +25,7 @@ export const createOrUpdate = mutation({
   },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity()
-    if (!identity) throw new Error("Unauthenticated")
+    if (!identity) throw new Error(ERRORS.UNAUTHENTICATED)
 
     const userId = identity.subject
 
